@@ -1,21 +1,34 @@
-const mysql = require("mysql");
 const express = require("express");
+const mysql = require("mysql");
 const bodyParser = require("body-parser");
-const encoder = bodyParser.urlencoded();
+const session = require('express-session');
+const flash = require('connect-flash');
+const encoder = bodyParser.urlencoded({ extended: true });
 
 const app = express();
+app.use("/js", express.static("js"))
+app.use(express.static(__dirname));
+
+
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true
+}));
+
+app.use(flash());
+
+app.use("/js", express.static("js"));
 app.use("/css", express.static("css"));
 app.use("/img", express.static("img"));
-app.use("/js", express.static("js"));
 
 
 const connection = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "root1234",
+    password: "root123",
     database: "ecommerce",
     connectionLimit: 10
-
 });
 
 connection.connect(function(error){
@@ -25,48 +38,59 @@ connection.connect(function(error){
         console.log("Connected to database");
     }
 });
+app.get("/login", function(req, res){
+    res.sendFile(__dirname + "/index.html");
+});
 
 app.get("/",function(req, res){
-    res.sendFile(__dirname + "/index.html");
-})
+    res.render('index', { message: req.flash('message') });
+});
+
+app.get("/register", function(req, res){
+    res.sendFile(__dirname + "/register.html");
+});
+
+
+app.post("/login", encoder, function(req, res){
+    let username = req.body.username;
+    let password = req.body.password;
+
+    let query = "SELECT * FROM users WHERE username = ? AND password = ?";
+    connection.query(query, [username, password], function(error, result){
+        if(error){
+            console.log("Error in authenticating user");
+        }else{
+            if(result.length > 0){
+                console.log("User authenticated successfully");
+                req.flash('message', 'Login successful!');
+                res.redirect("/homepage.html"); // Redirect to homepage
+            }else{
+                console.log("Invalid credentials");
+                req.flash('message', 'Invalid credentials.');
+                res.redirect("/login"); // Redirect back to login
+            }
+        }
+    });
+});
 
 app.post("/register", encoder, function(req, res){
     let username = req.body.username;
     let password = req.body.password;
     let email = req.body.email;
 
-    let sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-    let values = [username, password, email];
-
-    connection.query(sql, values, function(error, result){
+    let query = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+    connection.query(query, [username, password, email], function(error, result){
         if(error){
-            console.log("Error in inserting data", error);
-            res.status(500).send("An error occurred during registration");
+            console.log("Error in registering user");
         }else{
             console.log("User registered successfully");
-            res.redirect("/login.html");
+            res.redirect("/login");
         }
     });
 });
-app.post("/", encoder, function(req, res){
-    let username = req.body.username;
-    let password = req.body.password;
-
-    connection.query("select * from loginuser where email = ? and password = ?", [username, password], function(error, result, fields){
-        if (results.length > 0) {
-            res.redirect("/homepage.html");
-        } else {
-            res.send("Invalid username or password");
-            res.redirect("/");
-        }
-        res.end();
-    })
-})
-
-// when login is successful
-app.get("/homepage.html", function(req, res){
-    res.sendFile(__dirname + "/homepage.html");
-})
 
 
-app.listen(4000)
+
+app.listen(3000, function(){
+    console.log("Server started on port 3000");
+});

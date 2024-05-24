@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Register</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div class="hero">
+            <div class="form-box">
+                <div class="social-icons">
+                    <img src="img/fb.png" alt="Facebook">
+                    <img src="img/tw.png" alt="Twitter">
+                    <img src="img/gp.png" alt="Google+">
+                </div>
+                <form id="register" class="input-group" method="POST" action="/register">
+                    <input type="text" class="input-field" placeholder="User Name" required name="username">
+                    <input type="email" class="input-field" placeholder="Email" required name="email">
+                    <input type="password" class="input-field" placeholder="Enter Password" required name="password">
+                    <input type="checkbox" class="check-box"><span>I agree to the terms and conditions</span>
+                    <button type="submit" class="submit-btn">Register</button>
+                </form>
+                <p>Already have an account? <a href="index.html">Click here</a> to login.</p>
+            </div>
+        </div>
+    </body>
+</html>
