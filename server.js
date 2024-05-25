@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql");
+var mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -23,17 +23,18 @@ app.use("/css", express.static("css"));
 app.use("/img", express.static("img"));
 
 
-const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "root123",
+var connection = mysql.createConnection({
+    host: "project-database.c5eyqs6ii7vq.us-east-1.rds.amazonaws.com",
+    user: 'rdsuser',
+    password: "password",
     database: "ecommerce",
-    connectionLimit: 10
+    port: '3306',
 });
 
 connection.connect(function(error){
     if(error){
         console.log("Error in connecting to database");
+        console.log(error)
     }else{
         console.log("Connected to database");
     }
