@@ -8,6 +8,8 @@ const encoder = bodyParser.urlencoded({ extended: true });
 const app = express();
 app.use("/js", express.static("js"))
 app.use(express.static(__dirname));
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); 
 
 
 app.use(session({
@@ -23,7 +25,7 @@ app.use("/css", express.static("css"));
 app.use("/img", express.static("img"));
 
 
-var connection = mysql.createConnection({
+let connection = mysql.createConnection({
     host: "project-database.c5eyqs6ii7vq.us-east-1.rds.amazonaws.com",
     user: 'rdsuser',
     password: "password",
@@ -51,6 +53,30 @@ app.get("/register", function(req, res){
     res.sendFile(__dirname + "/register.html");
 });
 
+
+app.post("/", function(req, res){
+    // Handle the POST request
+    let username = req.body.username;
+    let password = req.body.password;
+
+    let query = 
+    "SELECT * FROM users WHERE username = ? AND password = ?";
+    connection.query(query, [username, password], function(error, result){
+        if(error){
+            console.log("Error in authenticating user");
+        }else{
+            if(result.length > 0){
+                console.log("User authenticated successfully");
+                req.flash('message', 'Login successful!');
+                res.redirect("/homepage.html"); // Redirect to homepage
+            }else{
+                console.log("Invalid credentials");
+                req.flash('message', 'Invalid credentials.');
+                res.redirect("/login"); // Redirect back to login
+            }
+        }
+    });
+});
 
 app.post("/login", encoder, function(req, res){
     let username = req.body.username;
